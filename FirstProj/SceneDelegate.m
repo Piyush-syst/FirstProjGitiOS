@@ -4,10 +4,11 @@
 //
 //  Created by macmini39 on 06/10/20.
 //
-
 #import "SceneDelegate.h"
 #import "AppDelegate.h"
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 
+//@import FacebookCore;
 @interface SceneDelegate ()
 
 @end
@@ -20,8 +21,16 @@
     // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
     // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
 }
-
-
+//For fb Login
+- (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
+{
+  UIOpenURLContext *context = URLContexts.allObjects.firstObject;
+  [FBSDKApplicationDelegate.sharedInstance application:UIApplication.sharedApplication
+                                               openURL:context.URL
+                                     sourceApplication:context.options.sourceApplication
+                                            annotation:context.options.annotation];
+}
+//--FB LOGIN--
 - (void)sceneDidDisconnect:(UIScene *)scene {
     // Called as the scene is being released by the system.
     // This occurs shortly after the scene enters the background, or when its session is discarded.

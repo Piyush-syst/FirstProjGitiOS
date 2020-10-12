@@ -7,8 +7,9 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
+@import GoogleSignIn;
+@interface AppDelegate : UIResponder <UIApplicationDelegate, GIDSignInDelegate>
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (readonly, strong) NSPersistentContainer *persistentContainer;
 
