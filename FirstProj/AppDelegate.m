@@ -9,14 +9,16 @@
 #import "ViewController.h"
 #import "ViewController2.h"
 @import FBSDKCoreKit;
-
+@import UserNotifications;
 @import Firebase;
-@interface AppDelegate ()
-@property (strong,nonatomic) ViewController *firstScrn;
+
+@interface AppDelegate ()<UNUserNotificationCenterDelegate>
+
 @end
 
 @implementation AppDelegate
 
+NSString *const kGCMMessageIDKey = @"gcm.message_id";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [FBSDKSettings setAppID:@"725646011354098"];
@@ -30,10 +32,129 @@
     // Override point for customization after application launch.
     //Firebase
     [FIRApp configure];
-    
+    //FCM
+    [FIRMessaging messaging].delegate = self;
+    if ([UNUserNotificationCenter class] != nil) {
+        // iOS 10 or later
+        // For iOS 10 display notification (sent via APNS)
+        [UNUserNotificationCenter currentNotificationCenter].delegate = self;
+        UNAuthorizationOptions authOptions = UNAuthorizationOptionAlert |
+            UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+        [[UNUserNotificationCenter currentNotificationCenter]
+            requestAuthorizationWithOptions:authOptions
+            completionHandler:^(BOOL granted, NSError * _Nullable error) {
+              // ...
+            }];
+      } else {
+        // iOS 10 notifications aren't available; fall back to iOS 8-9 notifications.
+        UIUserNotificationType allNotificationTypes =
+        (UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge);
+        UIUserNotificationSettings *settings =
+        [UIUserNotificationSettings settingsForTypes:allNotificationTypes categories:nil];
+        [application registerUserNotificationSettings:settings];
+      }
+
+      [application registerForRemoteNotifications];
+ 
     return YES;
 }
 
+-(void)registerUserForPushNotification:(NSString*)deviceToken  {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        center.delegate = self;
+        [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge) completionHandler:^(BOOL granted, NSError * _Nullable error)
+         {
+             if( !error )
+             {
+                 [[UIApplication sharedApplication] registerForRemoteNotifications];  // required to get the app to do anything at all about push notifications
+                 NSLog( @"Push registration success." );
+             }
+             else
+             {
+                 NSLog( @"Push registration FAILED" );
+                 NSLog( @"ERROR: %@ - %@", error.localizedFailureReason, error.localizedDescription );
+                 NSLog( @"SUGGESTIONS: %@ - %@", error.localizedRecoveryOptions, error.localizedRecoverySuggestion );
+             }
+         }];
+}
+    
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+  // If you are receiving a notification message while your app is in the background,
+  // this callback will not be fired till the user taps on the notification launching the application.
+  // TODO: Handle data of notification
+
+  // With swizzling disabled you must let Messaging know about the message, for Analytics
+  // [[FIRMessaging messaging] appDidReceiveMessage:userInfo];
+
+  // Print message ID.
+  if (userInfo[kGCMMessageIDKey]) {
+    NSLog(@"Message ID: %@", userInfo[kGCMMessageIDKey]);
+  }
+
+  // Print full message.
+  NSLog(@"%@", userInfo);
+}
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+    fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+  // If you are receiving a notification message while your app is in the background,
+  // this callback will not be fired till the user taps on the notification launching the application.
+  // TODO: Handle data of notification
+
+  // With swizzling disabled you must let Messaging know about the message, for Analytics
+  // [[FIRMessaging messaging] appDidReceiveMessage:userInfo];
+
+  // Print message ID.
+  if (userInfo[kGCMMessageIDKey]) {
+    NSLog(@"Message ID: %@", userInfo[kGCMMessageIDKey]);
+  }
+
+  // Print full message.
+  NSLog(@"%@", userInfo);
+
+  completionHandler(UIBackgroundFetchResultNewData);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler {
+  NSDictionary *userInfo = notification.request.content.userInfo;
+
+  // With swizzling disabled you must let Messaging know about the message, for Analytics
+  // [[FIRMessaging messaging] appDidReceiveMessage:userInfo];
+
+  // Print message ID.
+  if (userInfo[kGCMMessageIDKey]) {
+    NSLog(@"Message ID: %@", userInfo[kGCMMessageIDKey]);
+  }
+
+    
+  // Print full message.
+  NSLog(@"%@", userInfo);
+
+  // Change this to your preferred presentation option
+  completionHandler(UNNotificationPresentationOptionBadge | UNNotificationPresentationOptionAlert);
+}
+- (void)messaging:(FIRMessaging *)messaging didReceiveRegistrationToken:(NSString *)fcmToken {
+    NSLog(@"FCM registration token: %@", fcmToken);
+    // Notify about received token.
+    NSDictionary *dataDict = [NSDictionary dictionaryWithObject:fcmToken forKey:@"token"];
+    [[NSNotificationCenter defaultCenter] postNotificationName:
+     @"FCMToken" object:nil userInfo:dataDict];
+    [self registerUserForPushNotification:fcmToken];
+    // TODO: If necessary send token to application server.
+    // Note: This callback is fired at each app startup and whenever a new token is generated.
+}
+
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+  NSLog(@"Unable to register for remote notifications: %@", error);
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+  NSLog(@"APNs device token retrieved: %@", deviceToken);
+
+  // With swizzling disabled you must set the APNs device token here.
+  // [FIRMessaging messaging].APNSToken = deviceToken;
+}
 
 #pragma mark - UISceneSession lifecycle
 
@@ -130,13 +251,13 @@
 }
     
     NSString *email = user.profile.email;
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-
-    _firstScrn = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
+    ViewController *vc= [[ViewController alloc]init];
+//    [vc addTarget:vc action:@selector(clickedOnElement) forControlEvents:UIControlEventTouchUpInside];
+    ViewController2 *listingVC = [[ViewController2 alloc] init];
+    [(UINavigationController *)self.window.rootViewController pushViewController:listingVC animated:YES];
     
 
- ViewController2 *VC = [[ViewController2 alloc] init];
-    [_firstScrn.navigationController pushViewController:VC animated:YES];
+   
     NSLog(@"%@", email);
     
         

@@ -4,6 +4,7 @@ PODS:
     - AppAuth/ExternalUserAgent (= 1.4.0)
   - AppAuth/Core (1.4.0)
   - AppAuth/ExternalUserAgent (1.4.0)
+  - Branch (0.34.0)
   - FBSDKCoreKit (7.1.1):
     - FBSDKCoreKit/Basics (= 7.1.1)
     - FBSDKCoreKit/Core (= 7.1.1)
@@ -119,6 +120,7 @@ PODS:
   - Protobuf (3.13.0)
 
 DEPENDENCIES:
+  - Branch
   - FBSDKCoreKit
   - FBSDKLoginKit
   - Firebase
@@ -130,6 +132,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - AppAuth
+    - Branch
     - FBSDKCoreKit
     - FBSDKLoginKit
     - Firebase
@@ -152,6 +155,7 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
+  Branch: 446aeb832102f56f04edf5fa7cb0a752dc392ca7
   FBSDKCoreKit: b46507dc8b8cefed31d644e74d7cc30e2a715ef8
   FBSDKLoginKit: 1a61d79e2b25e2fc0d03dccab1e34b38bbdf2546
   Firebase: c23a36d9e4cdf7877dfcba8dd0c58add66358999
@@ -172,6 +176,6 @@ SPEC CHECKSUMS:
   PromisesObjC: b14b1c6b68e306650688599de8a45e49fae81151
   Protobuf: 3dac39b34a08151c6d949560efe3f86134a3f748
 
-PODFILE CHECKSUM: 9a042a8688e7fa7d33972547ecbc8abb6b49dab3
+PODFILE CHECKSUM: a9558a63cecd7399e40cc8ee0e749551d1fffe30
 
 COCOAPODS: 1.9.3

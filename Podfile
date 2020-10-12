@@ -8,4 +8,5 @@ pod 'Firebase/Crashlytics'
 pod 'GoogleSignIn'
 pod 'FBSDKLoginKit'
 pod 'FBSDKCoreKit'
+pod 'Branch'
 end 
