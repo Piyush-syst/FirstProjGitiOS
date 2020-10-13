@@ -7,7 +7,7 @@
 #import "SceneDelegate.h"
 #import "AppDelegate.h"
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
-
+#import "Branch/Branch.h"
 //@import FacebookCore;
 @interface SceneDelegate ()
 
@@ -20,10 +20,18 @@
     // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
     // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
     // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
+    //BranchIO
+    NSUserActivity *activity = [[connectionOptions userActivities] allObjects].firstObject;
+        if (activity) {
+            [[BranchScene shared] scene:scene continueUserActivity:activity];
+        }
 }
 //For fb Login
 - (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
 {
+    //Branch IO
+    [[BranchScene shared] scene:scene openURLContexts:URLContexts];
+    //Facebook
   UIOpenURLContext *context = URLContexts.allObjects.firstObject;
   [FBSDKApplicationDelegate.sharedInstance application:UIApplication.sharedApplication
                                                openURL:context.URL
@@ -65,6 +73,10 @@
     // Save changes in the application's managed object context when the application transitions to the background.
     [(AppDelegate *)UIApplication.sharedApplication.delegate saveContext];
 }
+- (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity {
+    [[BranchScene shared] scene:scene continueUserActivity:userActivity];
+}
+
 
 
 @end

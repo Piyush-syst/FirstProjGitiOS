@@ -22,6 +22,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>fb725646011354098</string>
+				<string>Intelligent Mode</string>
 			</array>
 			<key>FacebookAppID</key>
 			<string>725646011354098</string>
@@ -41,6 +42,16 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.959525938703-ekpjfoqdu0cq6tojkgb6ocb7lgcmv413</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>sys.FirstProj</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>MyTaskApp</string>
 			</array>
 		</dict>
 	</array>
@@ -95,6 +106,13 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>branch_key</key>
+	<string>key_live_moO2J1AWis01B48uDKuAbdpowDaNWm3z</string>
+	<key>branch_universal_link_domains</key>
+	<array>
+		<string>mqv14.app.link</string>
+		<string>mqv14-alternate.app.link</string>
 	</array>
 </dict>
 </plist>

@@ -14,6 +14,7 @@
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 #import <FBSDKLoginKit/FBSDKLoginKit.h>
 @import GoogleSignIn;
+
 @interface ViewController ()
 
 @end
@@ -24,6 +25,8 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+    
+
     //Google login
     [GIDSignIn sharedInstance].presentingViewController = self;
     
@@ -36,6 +39,7 @@
         NSLog(@"FBTOken");
         ViewController2 *vc1=[[ViewController2 alloc]initWithNibName:@"ViewController2" bundle:nil];
         [self.navigationController pushViewController:vc1 animated:YES];
+       
     }
 
        // User is logged in, do work such as go to next view controller.

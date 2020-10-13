@@ -8,12 +8,14 @@
 #import "AppDelegate.h"
 #import "ViewController.h"
 #import "ViewController2.h"
+#import "Branch/Branch.h"
 @import FBSDKCoreKit;
 @import UserNotifications;
 @import Firebase;
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
-
+@property (nonatomic, weak, nullable) id<FIRMessagingDelegate> delegate;
+@property (strong, nonatomic) ViewController2 *sb;
 @end
 
 @implementation AppDelegate
@@ -21,6 +23,8 @@
 NSString *const kGCMMessageIDKey = @"gcm.message_id";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    
     [FBSDKSettings setAppID:@"725646011354098"];
    //Facebook Sign In
     [[FBSDKApplicationDelegate sharedInstance] application:application
@@ -33,6 +37,11 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
     //Firebase
     [FIRApp configure];
     //FCM
+    UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
+            [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound + UNAuthorizationOptionBadge)
+                                  completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                                      // Enable or disable features based on authorization.
+                                  }];
     [FIRMessaging messaging].delegate = self;
     if ([UNUserNotificationCenter class] != nil) {
         // iOS 10 or later
@@ -56,29 +65,39 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
 
       [application registerForRemoteNotifications];
  
+    
+    // Branch IO
+    [Branch setUseTestBranchKey:YES];
+     // listener for Branch Deep Link data
+     [[Branch getInstance] initSessionWithLaunchOptions:launchOptions andRegisterDeepLinkHandler:^(NSDictionary * _Nonnull params, NSError * _Nullable error) {
+       // do stuff with deep link data (nav to page, display content, etc)
+       NSLog(@"%@", params);
+     }];
+    
     return YES;
 }
 
--(void)registerUserForPushNotification:(NSString*)deviceToken  {
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-        center.delegate = self;
-        [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge) completionHandler:^(BOOL granted, NSError * _Nullable error)
-         {
-             if( !error )
-             {
-                 [[UIApplication sharedApplication] registerForRemoteNotifications];  // required to get the app to do anything at all about push notifications
-                 NSLog( @"Push registration success." );
-             }
-             else
-             {
-                 NSLog( @"Push registration FAILED" );
-                 NSLog( @"ERROR: %@ - %@", error.localizedFailureReason, error.localizedDescription );
-                 NSLog( @"SUGGESTIONS: %@ - %@", error.localizedRecoveryOptions, error.localizedRecoverySuggestion );
-             }
-         }];
-}
+//-(void)registerUserForPushNotification:(NSString*)deviceToken  {
+//    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+//        center.delegate = self;
+//        [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge) completionHandler:^(BOOL granted, NSError * _Nullable error)
+//         {
+//             if( !error )
+//             {
+//                 [[UIApplication sharedApplication] registerForRemoteNotifications];  // required to get the app to do anything at all about push notifications
+//                 NSLog( @"Push registration success." );
+//             }
+//             else
+//             {
+//                 NSLog( @"Push registration FAILED" );
+//                 NSLog( @"ERROR: %@ - %@", error.localizedFailureReason, error.localizedDescription );
+//                 NSLog( @"SUGGESTIONS: %@ - %@", error.localizedRecoveryOptions, error.localizedRecoverySuggestion );
+//             }
+//         }];
+//}
     
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+//    [self InformativeAlertWithMessage: @"Notification popped"];
   // If you are receiving a notification message while your app is in the background,
   // this callback will not be fired till the user taps on the notification launching the application.
   // TODO: Handle data of notification
@@ -92,14 +111,16 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
   }
 
   // Print full message.
-  NSLog(@"%@", userInfo);
+  NSLog(@"%@ That is soomehting", userInfo);
+    
 }
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
     fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
   // If you are receiving a notification message while your app is in the background,
   // this callback will not be fired till the user taps on the notification launching the application.
   // TODO: Handle data of notification
-
+//Branch IO
+   
   // With swizzling disabled you must let Messaging know about the message, for Analytics
   // [[FIRMessaging messaging] appDidReceiveMessage:userInfo];
 
@@ -125,11 +146,13 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
   // Print message ID.
   if (userInfo[kGCMMessageIDKey]) {
     NSLog(@"Message ID: %@", userInfo[kGCMMessageIDKey]);
+      
   }
 
     
   // Print full message.
   NSLog(@"%@", userInfo);
+    NSLog(@"Yahi to chahiye");
 
   // Change this to your preferred presentation option
   completionHandler(UNNotificationPresentationOptionBadge | UNNotificationPresentationOptionAlert);
@@ -140,7 +163,7 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
     NSDictionary *dataDict = [NSDictionary dictionaryWithObject:fcmToken forKey:@"token"];
     [[NSNotificationCenter defaultCenter] postNotificationName:
      @"FCMToken" object:nil userInfo:dataDict];
-    [self registerUserForPushNotification:fcmToken];
+//    [self registerUserForPushNotification:fcmToken];
     // TODO: If necessary send token to application server.
     // Note: This callback is fired at each app startup and whenever a new token is generated.
 }
@@ -217,10 +240,15 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
         abort();
     }
 }
-
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray * _Nullable))restorationHandler {
+  // handler for Universal Links
+  [[Branch getInstance] continueUserActivity:userActivity];
+  return YES;
+}
 - (BOOL)application:(UIApplication *)app
             openURL:(NSURL *)url
             options:(NSDictionary<NSString *, id> *)options {
+    [[Branch getInstance] application:app openURL:url options:options];
   return [[GIDSignIn sharedInstance] handleURL:url];
 }
 - (BOOL)application:(UIApplication *)application
@@ -253,8 +281,7 @@ NSString *const kGCMMessageIDKey = @"gcm.message_id";
     NSString *email = user.profile.email;
     ViewController *vc= [[ViewController alloc]init];
 //    [vc addTarget:vc action:@selector(clickedOnElement) forControlEvents:UIControlEventTouchUpInside];
-    ViewController2 *listingVC = [[ViewController2 alloc] init];
-    [(UINavigationController *)self.window.rootViewController pushViewController:listingVC animated:YES];
+//    (ViewController2 *)[_sb instantiateViewControllerWithIdentifier:@"ViewController2"];
     
 
    
