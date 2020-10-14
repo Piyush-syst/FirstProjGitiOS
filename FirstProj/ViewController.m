@@ -16,7 +16,7 @@
 @import GoogleSignIn;
 
 @interface ViewController ()
-
+@property (strong,nonatomic) NSString *uname;
 @end
 
 
@@ -37,6 +37,7 @@
 
     if ([FBSDKAccessToken currentAccessToken]){
         NSLog(@"FBTOken");
+       
         ViewController2 *vc1=[[ViewController2 alloc]initWithNibName:@"ViewController2" bundle:nil];
         [self.navigationController pushViewController:vc1 animated:YES];
        
@@ -73,8 +74,19 @@
     } else if (result.isCancelled) {
       NSLog(@"Cancelled");
     } else {
+        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"me" parameters:nil]
+                 startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+
+                     if (!error) {
+                         NSLog(@"fetched user:%@  and Email : %@", result,result[@"name"]);
+                         self.uname=result[@"name"];
+                 }
+                 }];
+        NSLog(@"Name:%@",self.uname);
         ViewController2 *vc = [[ ViewController2 alloc] initWithNibName:@"ViewController2" bundle:nil];
+        vc.userName=self.uname;
         [self.navigationController pushViewController:vc animated:YES];
+        
       NSLog(@"Logged in");
        
     }
